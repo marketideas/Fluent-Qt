@@ -124,6 +124,7 @@ private:
     friend class detail::DataGridCellDelegate;
 
     void applyThemePalette();
+    void applyRowMetrics();
     void connectModelSignals(QAbstractItemModel* model);
     void refreshModelPresentation();
     void syncFluentScrollBars();

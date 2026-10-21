@@ -217,20 +217,30 @@ FluentElement::Radius FluentElement::themeRadius() const
 
 FluentElement::Spacing FluentElement::themeSpacing() const
 {
+    // Font scale multiplies type. The same factor has to multiply control
+    // heights and padding, or a larger font sits in a 32px row and clips.
+    const qreal scale = ThemeRegistry::instance().fontScale();
+    const auto px = [scale](int value) {
+        if (value <= 0)
+            return 0;
+        return qMax(1, qRound(static_cast<qreal>(value) * scale));
+    };
     Spacing s;
-    s.padding = {::Spacing::Padding::ControlHorizontal, ::Spacing::Padding::ControlVertical, ::Spacing::Padding::Card,
-        ::Spacing::Padding::Dialog, ::Spacing::Padding::TextFieldHorizontal, ::Spacing::Padding::TextFieldVertical,
-        ::Spacing::Padding::ListItemHorizontal, ::Spacing::Padding::ListItemVertical};
-    s.gap = {::Spacing::Gap::Tight, ::Spacing::Gap::Normal, ::Spacing::Gap::Loose, ::Spacing::Gap::Section};
-    s.controlHeight = {::Spacing::ControlHeight::Small, ::Spacing::ControlHeight::Standard,
-        ::Spacing::ControlHeight::Large};
-    s.xSmall = ::Spacing::XSmall;
-    s.small = ::Spacing::Small;
-    s.medium = ::Spacing::Medium;
-    s.standard = ::Spacing::Standard;
-    s.large = ::Spacing::Large;
-    s.xLarge = ::Spacing::XLarge;
-    s.xxLarge = ::Spacing::XXLarge;
+    s.padding = {px(::Spacing::Padding::ControlHorizontal), px(::Spacing::Padding::ControlVertical),
+        px(::Spacing::Padding::Card), px(::Spacing::Padding::Dialog), px(::Spacing::Padding::TextFieldHorizontal),
+        px(::Spacing::Padding::TextFieldVertical), px(::Spacing::Padding::ListItemHorizontal),
+        px(::Spacing::Padding::ListItemVertical)};
+    s.gap = {px(::Spacing::Gap::Tight), px(::Spacing::Gap::Normal), px(::Spacing::Gap::Loose),
+        px(::Spacing::Gap::Section)};
+    s.controlHeight = {px(::Spacing::ControlHeight::Small), px(::Spacing::ControlHeight::Standard),
+        px(::Spacing::ControlHeight::Large)};
+    s.xSmall = px(::Spacing::XSmall);
+    s.small = px(::Spacing::Small);
+    s.medium = px(::Spacing::Medium);
+    s.standard = px(::Spacing::Standard);
+    s.large = px(::Spacing::Large);
+    s.xLarge = px(::Spacing::XLarge);
+    s.xxLarge = px(::Spacing::XXLarge);
     return s;
 }
 

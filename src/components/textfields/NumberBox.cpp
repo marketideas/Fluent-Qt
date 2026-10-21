@@ -236,6 +236,7 @@ NumberBox::NumberBox(QWidget* parent)
     updateHeaderTextMargins();
     updateTextMarginsForChrome();
     updateSpinnerState();
+    onThemeUpdated();
 
     connect(this, &QLineEdit::editingFinished, this, [this]() { commitInput(); });
 }
@@ -474,6 +475,9 @@ QSize NumberBox::minimumSizeHint() const
 void NumberBox::onThemeUpdated()
 {
     LineEdit::onThemeUpdated();
+    const auto spacing = themeSpacing();
+    setSpinButtonSize(QSize(qMax(24, spacing.controlHeight.small), qMax(14, spacing.controlHeight.small / 2)));
+    setFixedHeight(totalPreferredHeight());
     if (m_spinUpButton)
         m_spinUpButton->onThemeUpdated();
     if (m_spinDownButton)
@@ -630,7 +634,8 @@ bool NumberBox::eventFilter(QObject* watched, QEvent* event)
 
 QRect NumberBox::inputRect() const
 {
-    return QRect(0, inputTop(), width(), kInputHeight);
+    const int top = inputTop();
+    return QRect(0, top, width(), qMax(0, height() - top));
 }
 
 int NumberBox::inputTop() const
@@ -640,7 +645,8 @@ int NumberBox::inputTop() const
 
 int NumberBox::totalPreferredHeight() const
 {
-    return inputTop() + kInputHeight;
+    const int input = qMax(kInputHeight, themeSpacing().controlHeight.standard);
+    return inputTop() + input;
 }
 
 void NumberBox::initializeSpinnerButtons()
