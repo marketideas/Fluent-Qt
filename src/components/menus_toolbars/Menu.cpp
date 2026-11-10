@@ -634,7 +634,7 @@ QSize FluentMenu::sizeHint() const
     // actionGeometry，原生平台仍保留其更大的 style hint。
     int contentHeight = contentsMargins().top() + contentsMargins().bottom();
     const int itemContentHeight = qMax(fontMetrics.height(), Typography::IconSize::Standard);
-    const int itemHeight = qMax(::Spacing::ControlHeight::Small, itemContentHeight + 2 * m_itemVerticalPadding);
+    const int itemHeight = qMax(spacing.controlHeight.small, itemContentHeight + 2 * m_itemVerticalPadding);
     for (QAction* action : actions()) {
         if (!action || !action->isVisible())
             continue;

@@ -157,7 +157,12 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
         QSize hint = QStyledItemDelegate::sizeHint(option, index);
-        hint.setHeight(qMax(hint.height(), ::Spacing::ControlHeight::Standard + ::Spacing::Gap::Tight));
+        int floor = ::Spacing::ControlHeight::Standard + ::Spacing::Gap::Tight;
+        if (m_listView) {
+            const auto spacing = m_listView->themeSpacing();
+            floor = spacing.controlHeight.standard + spacing.gap.tight;
+        }
+        hint.setHeight(qMax(hint.height(), floor));
         hint.setWidth(hint.width() + 26);
         return hint;
     }
@@ -1885,6 +1890,7 @@ void ListView::paintPressedHoverFeedback(QPainter& painter) const
 void ListView::onThemeUpdated()
 {
     applyThemeStyle();
+    doItemsLayout();
 }
 
 void ListView::applyThemeStyle()

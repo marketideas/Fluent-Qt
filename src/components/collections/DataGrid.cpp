@@ -261,7 +261,12 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
         QSize hint = QStyledItemDelegate::sizeHint(option, index);
-        hint.setHeight(qMax(hint.height(), kRowHeight));
+        if (m_grid) {
+            const auto spacing = m_grid->themeSpacing();
+            hint.setHeight(qMax(hint.height(), spacing.controlHeight.standard + spacing.xSmall));
+        } else {
+            hint.setHeight(qMax(hint.height(), kRowHeight));
+        }
         return hint;
     }
 
@@ -330,6 +335,7 @@ DataGrid::DataGrid(QWidget* parent) : QTableView(parent)
     m_borderOverlay = new detail::DataGridFrameOverlay(this);
 
     applyThemePalette();
+    applyRowMetrics();
     syncFluentScrollBars();
 }
 
@@ -460,9 +466,26 @@ void DataGrid::setScrollChainingEnabled(bool enabled)
     emit scrollChainingEnabledChanged();
 }
 
+void DataGrid::applyRowMetrics()
+{
+    const auto spacing = themeSpacing();
+    const int header = qMax(1, spacing.controlHeight.standard + spacing.xSmall);
+    const int row = header;
+    if (horizontalHeader())
+        horizontalHeader()->setFixedHeight(header);
+    if (!verticalHeader())
+        return;
+    verticalHeader()->setDefaultSectionSize(row);
+    verticalHeader()->setMinimumSectionSize(spacing.controlHeight.standard);
+    verticalHeader()->setFixedWidth(qMax(1, spacing.controlHeight.large));
+    for (int section = 0; section < verticalHeader()->count(); ++section)
+        verticalHeader()->resizeSection(section, row);
+}
+
 void DataGrid::onThemeUpdated()
 {
     applyThemePalette();
+    applyRowMetrics();
     if (viewport())
         viewport()->update();
     if (horizontalHeader())
