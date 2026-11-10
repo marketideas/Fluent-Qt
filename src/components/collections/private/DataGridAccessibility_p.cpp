@@ -30,6 +30,7 @@ class DataGridAccessibleCell final
       public QAccessibleActionInterface {
 public:
     DataGridAccessibleCell(DataGrid* view, const QModelIndex& index) : m_view(view), m_index(index) {}
+    ~DataGridAccessibleCell() override;
 
     bool isValid() const override;
     QObject* object() const override { return nullptr; }
@@ -70,6 +71,7 @@ public:
     DataGridAccessibleHeader(DataGrid* view, int section, Qt::Orientation orientation)
         : m_view(view), m_section(section), m_orientation(orientation)
     {}
+    ~DataGridAccessibleHeader() override;
 
     bool isValid() const override;
     QObject* object() const override { return nullptr; }
@@ -101,6 +103,7 @@ private:
 class DataGridAccessibleCorner final : public QAccessibleInterface {
 public:
     explicit DataGridAccessibleCorner(DataGrid* view) : m_view(view) {}
+    ~DataGridAccessibleCorner() override;
 
     bool isValid() const override { return !m_view.isNull(); }
     QObject* object() const override { return nullptr; }
@@ -132,7 +135,7 @@ class DataGridAccessible final
 public:
     explicit DataGridAccessible(DataGrid* view) : QAccessibleWidget(view, QAccessible::Table) {}
 
-    ~DataGridAccessible() override { clearChildCache(); }
+    ~DataGridAccessible() override;
 
     QAccessible::State state() const override;
     QAccessibleInterface* childAt(int x, int y) const override;
@@ -183,6 +186,21 @@ private:
 
     mutable QHash<int, QAccessible::Id> m_childToId;
 };
+
+// Windows 11 cannot unwind a tail jmp through an imported destructor.
+// RtlVirtualUnwind then calls RtlRaiseStatus until the stack is gone, so the
+// process dies after the splash when UI Automation destroys one of these
+// cells. An unoptimized body is a call plus ret, which the unwinder can walk.
+#if defined(_MSC_VER)
+#pragma optimize("", off)
+#endif
+DataGridAccessibleCell::~DataGridAccessibleCell() {}
+DataGridAccessibleHeader::~DataGridAccessibleHeader() {}
+DataGridAccessibleCorner::~DataGridAccessibleCorner() {}
+DataGridAccessible::~DataGridAccessible() { clearChildCache(); }
+#if defined(_MSC_VER)
+#pragma optimize("", on)
+#endif
 
 bool viewIsReadOnly(const DataGrid* view)
 {
